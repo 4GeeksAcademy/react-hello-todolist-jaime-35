@@ -1,10 +1,114 @@
-
-
-ul li{
-    border: 1px solid black;
-    list-style: none;
-    padding: 5px;
+h1 {
+  text-align: center;
+  font-family: "Segoe UI", sans-serif;
+  font-weight: 600;
+  margin-bottom: 30px;
+  color: #333;
 }
-h1{
-    text-align: center;
+
+input[type="text"] {
+  padding: 12px 16px;
+  width: 60%;
+  margin: 0 auto 30px;
+  display: block;
+  border: 2px solid #ffa500;
+  border-radius: 8px;
+  font-size: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  outline: none;
+  transition: 0.3s ease;
+}
+
+input[type="text"]:focus {
+  border-color: #ff8800;
+  box-shadow: 0 0 8px rgba(255, 136, 0, 0.3);
+}
+
+ul {
+  padding: 0;
+  width: 60%;
+  margin: 0 auto;
+}
+
+ul li {
+  background-color: #fff;
+  border-radius: 10px;
+  list-style: none;
+  padding: 12px 18px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
+  transition: background-color 0.2s ease;
+  animation: fadeInSlide 0.3s ease forwards;
+}
+
+ul li:hover {
+  background-color: #f8f8f8;
+}
+
+.delete-btn {
+  background: none;
+  border: none;
+  color: #ff4d4d;
+  cursor: pointer;
+  visibility: hidden;
+  font-size: 18px;
+  transition: transform 0.2s ease;
+}
+
+ul li:hover .delete-btn {
+  visibility: visible;
+}
+
+.delete-btn:hover {
+  transform: scale(1.2);
+}
+
+@keyframes fadeInSlide {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  input[type="text"],
+  ul {
+    width: 90%;
+  }
+}
+
+/* 🌙 Modo oscuro */
+.dark-mode {
+  background-color: #1e1e1e;
+  color: #f1f1f1;
+  min-height: 100vh;
+  padding: 2rem 0;
+}
+
+.dark-mode h1 {
+  color: #f8f8f8;
+}
+
+.dark-mode input[type="text"] {
+  background-color: #333;
+  color: white;
+  border-color: #ffa500;
+}
+
+.dark-mode ul li {
+  background-color: #2b2b2b;
+  color: white;
+  border: none;
+}
+
+.dark-mode .delete-btn {
+  color: #ff6b6b;
 }

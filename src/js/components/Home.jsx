@@ -1,92 +1,101 @@
 import React, { useState, useEffect } from "react";
+import "../../styles/index.css"; // ✅ ruta corregida
 
-const API_URL = "https://playground.4geeks.com/todo/todos/alesanchezr";
+const username = "jaimetodo";
+const API_BASE = `https://playground.4geeks.com/todo`;
 
 const Home = () => {
-  const [nuevoTodo, setNuevoTodo] = useState("");
   const [todos, setTodos] = useState([]);
+  const [nuevoTodo, setNuevoTodo] = useState("");
+  const [modoOscuro, setModoOscuro] = useState(() => {
+    return localStorage.getItem("modoOscuro") === "true";
+  });
 
-  // Crear usuario y cargar tareas al iniciar
   useEffect(() => {
-    crearUsuario();
-    fetchTodos();
+    fetch(`${API_BASE}/users/${username}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify([]),
+    })
+      .then((res) => {
+        if (!res.ok) console.warn("Usuario ya existe o hubo un error");
+        return fetchTodos();
+      })
+      .catch((err) => console.error("Error al crear usuario:", err));
   }, []);
 
-  const crearUsuario = () => {
-    fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify([]), // Usuario nuevo con lista vacía
-      headers: { "Content-Type": "application/json" }
-    })
-    .then(res => res.json())
-    .then(data => console.log("Usuario creado:", data))
-    .catch(err => console.error("Error al crear usuario:", err));
-  };
+  useEffect(() => {
+    localStorage.setItem("modoOscuro", modoOscuro);
+  }, [modoOscuro]);
 
   const fetchTodos = () => {
-    fetch(API_URL)
-      .then(res => res.json())
-      .then(data => setTodos(data))
-      .catch(err => console.error("Error al obtener tareas:", err));
+    fetch(`${API_BASE}/users/${username}`)
+      .then((res) => res.json())
+      .then((data) => setTodos(data.todos || []))
+      .catch((err) => console.error("Error cargando tareas:", err));
   };
 
-  const handleClick = () => {
-    if (nuevoTodo.trim() === "") return;
-
-    const nuevaTarea = {
-      label: nuevoTodo,
-      done: false
-    };
-
-    fetch(API_URL, {
+  const agregarTarea = () => {
+    if (!nuevoTodo.trim()) return;
+    fetch(`${API_BASE}/todos/${username}`, {
       method: "POST",
-      body: JSON.stringify(nuevaTarea),
-      headers: { "Content-Type": "application/json" }
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ label: nuevoTodo.trim(), is_done: false }),
     })
-    .then(res => res.json())
-    .then(() => {
-      setNuevoTodo("");
-      fetchTodos(); // Recarga lista
-    })
-    .catch(err => console.error("Error al agregar tarea:", err));
+      .then((res) => {
+        if (!res.ok) throw new Error("Error al agregar tarea");
+        setNuevoTodo("");
+        fetchTodos();
+      })
+      .catch((err) => console.error(err));
   };
 
-  const deleteTodo = (indice) => {
-    fetch(`${API_URL}/${indice}`, {
-      method: "DELETE"
+  const eliminarTarea = (todoId) => {
+    fetch(`${API_BASE}/todos/${todoId}`, {
+      method: "DELETE",
     })
-    .then(res => res.json())
-    .then(() => fetchTodos())
-    .catch(err => console.error("Error al eliminar tarea:", err));
+      .then(() => fetchTodos())
+      .catch((err) => console.error("Error al eliminar tarea:", err));
   };
 
-  const clearTodos = () => {
-    Promise.all(todos.map((_, i) =>
-      fetch(`${API_URL}/${i}`, { method: "DELETE" })
-    ))
-    .then(() => fetchTodos())
-    .catch(err => console.error("Error al limpiar tareas:", err));
-  };
-
-  const handleChange = (event) => {
-    setNuevoTodo(event.target.value);
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") agregarTarea();
   };
 
   return (
-    <div className="text-center">
-      <h1 className="text-center mt-5">Lista de Tareas</h1>
-      <div>
-        <input type="text" value={nuevoTodo} onChange={handleChange} />
-        <button onClick={handleClick}>Agregar tarea</button>
-        <button onClick={clearTodos} className="btn btn-danger mx-2">🧹 Limpiar todas</button>
+    <div className={modoOscuro ? "dark-mode" : ""}>
+      <div style={{ textAlign: "center", marginBottom: "20px" }}>
+        <button onClick={() => setModoOscuro(!modoOscuro)}>
+          {modoOscuro ? "☀️ Modo Claro" : "🌙 Modo Oscuro"}
+        </button>
       </div>
-      <p>Nueva tarea: {nuevoTodo}</p>
+
+      <h1>📝 Lista de Tareas</h1>
+
+      <input
+        type="text"
+        placeholder="Escribe una tarea y presiona Enter"
+        value={nuevoTodo}
+        onChange={(e) => setNuevoTodo(e.target.value)}
+        onKeyDown={handleKeyDown}
+      />
+
       <ul>
-        {todos.map((todo, indice) => (
-          <li key={indice}>
-            {todo.label} <button onClick={() => deleteTodo(indice)}>Borrar</button>
-          </li>
-        ))}
+        {todos.length === 0 ? (
+          <li>No hay tareas, añade una ✨</li>
+        ) : (
+          todos.map((tarea) => (
+            <li key={tarea.id}>
+              {tarea.label}
+              <button
+                className="delete-btn"
+                onClick={() => eliminarTarea(tarea.id)}
+              >
+                🗑️
+              </button>
+            </li>
+          ))
+        )}
       </ul>
     </div>
   );
